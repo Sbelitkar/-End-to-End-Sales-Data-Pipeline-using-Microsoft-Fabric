@@ -1,0 +1,91 @@
+{
+  "name": "sales_dataflow",
+  "description": "Dataflow Gen2: Sales data transformations from Lakehouse Silver to Fabric Warehouse Gold layer",
+  "pbiServicePrincipalId": null,
+  "annotations": [
+    {
+      "name": "PBI_ResultType",
+      "value": "DataflowV2"
+    },
+    {
+      "name": "PBI_NavigationStepName",
+      "value": "Navigation"
+    }
+  ],
+  "queries": [
+    {
+      "name": "SalesSilver",
+      "description": "Read cleaned sales data from Silver Delta Table",
+      "querySteps": [
+        {
+          "name": "Source",
+          "expression": "let\n    Source = Lakehouse.Contents(null, [workspaceId = \"YOUR_WORKSPACE_ID\", lakehouseId = \"YOUR_LAKEHOUSE_ID\"]),\n    Tables = Source{[Id=\"Tables\"]}[Data],\n    SilverSales = Tables{[Schema=\"silver\",Item=\"sales\"]}[Data]\nin\n    SilverSales"
+        },
+        {
+          "name": "FilterCurrent",
+          "expression": "Table.SelectRows(Source, each [_silver_loaded_at] >= DateTime.LocalNow() - #duration(1,0,0,0))"
+        },
+        {
+          "name": "SelectColumns",
+          "expression": "Table.SelectColumns(FilterCurrent, {\"order_id\",\"order_line\",\"order_date\",\"ship_date\",\"ship_mode\",\"customer_id\",\"product_id\",\"region\",\"quantity\",\"unit_price\",\"discount\",\"gross_sales\",\"discount_amt\",\"net_sales\",\"cogs\",\"profit\"})"
+        },
+        {
+          "name": "TypeConversions",
+          "expression": "Table.TransformColumnTypes(SelectColumns, {{\"order_date\", type date}, {\"ship_date\", type date}, {\"quantity\", Int32.Type}, {\"unit_price\", type number}, {\"gross_sales\", type number}, {\"net_sales\", type number}, {\"profit\", type number}})"
+        }
+      ],
+      "dataDestination": {
+        "type": "FabricWarehouse",
+        "workspaceId": "YOUR_WORKSPACE_ID",
+        "artifactId": "YOUR_WAREHOUSE_ID",
+        "schema": "dbo",
+        "table": "stg_sales",
+        "updateMethod": "Replace"
+      }
+    },
+    {
+      "name": "CustomersSilver",
+      "description": "Read cleaned customers from Silver Delta Table",
+      "querySteps": [
+        {
+          "name": "Source",
+          "expression": "let\n    Source = Lakehouse.Contents(null, [workspaceId = \"YOUR_WORKSPACE_ID\", lakehouseId = \"YOUR_LAKEHOUSE_ID\"]),\n    Tables = Source{[Id=\"Tables\"]}[Data],\n    SilverCustomers = Tables{[Schema=\"silver\",Item=\"customers\"]}[Data]\nin\n    SilverCustomers"
+        },
+        {
+          "name": "SelectColumns",
+          "expression": "Table.SelectColumns(Source, {\"customer_id\",\"customer_name\",\"segment\",\"country\",\"state\",\"city\",\"postal_code\",\"email\"})"
+        }
+      ],
+      "dataDestination": {
+        "type": "FabricWarehouse",
+        "workspaceId": "YOUR_WORKSPACE_ID",
+        "artifactId": "YOUR_WAREHOUSE_ID",
+        "schema": "dbo",
+        "table": "stg_customers",
+        "updateMethod": "Replace"
+      }
+    },
+    {
+      "name": "ProductsSilver",
+      "description": "Read cleaned products from Silver Delta Table",
+      "querySteps": [
+        {
+          "name": "Source",
+          "expression": "let\n    Source = Lakehouse.Contents(null, [workspaceId = \"YOUR_WORKSPACE_ID\", lakehouseId = \"YOUR_LAKEHOUSE_ID\"]),\n    Tables = Source{[Id=\"Tables\"]}[Data],\n    SilverProducts = Tables{[Schema=\"silver\",Item=\"products\"]}[Data]\nin\n    SilverProducts"
+        },
+        {
+          "name": "SelectColumns",
+          "expression": "Table.SelectColumns(Source, {\"product_id\",\"product_name\",\"category\",\"sub_category\",\"brand\",\"standard_cost\",\"list_price\"})"
+        }
+      ],
+      "dataDestination": {
+        "type": "FabricWarehouse",
+        "workspaceId": "YOUR_WORKSPACE_ID",
+        "artifactId": "YOUR_WAREHOUSE_ID",
+        "schema": "dbo",
+        "table": "stg_products",
+        "updateMethod": "Replace"
+      }
+    }
+  ]
+}
