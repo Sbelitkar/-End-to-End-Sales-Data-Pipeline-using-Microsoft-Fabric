@@ -1,6 +1,5 @@
 # 🏭 End-to-End Sales Data Pipeline — Microsoft Fabric
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Microsoft Fabric](https://img.shields.io/badge/Microsoft-Fabric-blue)](https://fabric.microsoft.com)
 [![Power BI](https://img.shields.io/badge/Power-BI-F2C811)](https://powerbi.microsoft.com)
 
@@ -207,7 +206,3 @@ Connect Power BI Desktop to your Fabric Warehouse and import measures from `powe
 5. Open a Pull Request
 
 ---
-
-## 📜 License
-
-MIT License — see [LICENSE](LICENSE)
